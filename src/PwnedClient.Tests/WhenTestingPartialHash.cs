@@ -22,7 +22,7 @@
             var hashedPassword = password.ToSha1Hash();
             var firstFive = hashedPassword.Substring(0, 5);
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetRange(firstFive);
+            var result = this.passwordChecker.GetMatchesForPartialHash(firstFive);
             result.Should().ContainKey(suffix);
         }
 
@@ -33,7 +33,7 @@
             var hashedPassword = password.ToSha1Hash();
             var firstFive = hashedPassword.Substring(0, 5);
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetRange(firstFive);
+            var result = this.passwordChecker.GetMatchesForPartialHash(firstFive);
             result.Should().NotContainKey(suffix);
         }
 
@@ -43,7 +43,7 @@
             var password = "password123";
             var hashedPassword = password.ToSha1Hash();
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetRange(hashedPassword);
+            var result = this.passwordChecker.GetMatchesForPartialHash(hashedPassword);
             result.Should().ContainKey(suffix);
         }
     }

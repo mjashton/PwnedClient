@@ -5,15 +5,20 @@
     using System.IO;
     using System.Linq;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Security.Cryptography;
     using System.Text;
 
     public class PwnedClient
     {
         private HttpClient client = new HttpClient();
-        private string baseUri = "https://api.pwnedpasswords.com/range/";
+        private Uri baseUri = new Uri("https://api.pwnedpasswords.com/range/");
+
         public PwnedClient()
         {
+            this.client.BaseAddress = this.baseUri;
+            this.client.DefaultRequestHeaders.Add("api-version","2");
+            this.client.DefaultRequestHeaders.Add("User-Agent", "PwnedClient.Net");
         }
 
         public bool IsCompromisedPlainTextPassword(string password)
@@ -26,14 +31,19 @@
         {
             var suffix = hashedPassword.GetSuffix();
 
-            var results = this.GetSearchResults(this.GetSearchUri(hashedPassword));
+            var results = this.GetSearchResults(hashedPassword.FirstFive());
             return results.Contains(suffix);
         }
 
-        public Dictionary<string,int> GetRange(string hashedPassword)
+        public Dictionary<string,int> GetMatchesForPartialHash(string hashedPassword)
         {
-            var results = this.GetSearchResults(this.GetSearchUri(hashedPassword));
+            var results = this.GetRawMatchesForPartialHash(hashedPassword);
             return ResultsAsDictionary(results);
+        }
+
+        public string GetRawMatchesForPartialHash(string hashedPassword)
+        {
+            return this.GetSearchResults(hashedPassword.FirstFive());
         }
 
         private Dictionary<string, int> ResultsAsDictionary(string results)
@@ -49,11 +59,7 @@
             return dictionary;
         }
 
-        private string GetSearchUri(string password)
-        {
-            var firstFive = password.Substring(0, 5);
-            return this.baseUri + firstFive;
-        }
+
 
         private string GetSearchResults(string searchUri)
         {
@@ -84,6 +90,11 @@
         public static string GetSuffix(this string input)
         {
             return input.Substring(5, input.Length - 5);
+        }
+
+        public static string FirstFive(this string input)
+        {
+            return input.Substring(0, 5);
         }
 
         public static IEnumerable<string> SplitToLines(this string input)
