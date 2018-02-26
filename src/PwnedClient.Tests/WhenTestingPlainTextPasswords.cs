@@ -31,5 +31,21 @@
             var result = this.passwordChecker.IsCompromisedPlainTextPassword(password);
             result.Should().BeFalse();
         }
+
+        [TestMethod]
+        public void ShortPassword_ThrowsException()
+        {
+            var password = "1234";
+            Action act = () => this.passwordChecker.IsCompromisedPlainTextPassword(password);
+            act.Should().ThrowExactly<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void NullPassword_ThrowsException()
+        {
+            string password = null;
+            Action act = () => this.passwordChecker.IsCompromisedPlainTextPassword(password);
+            act.Should().ThrowExactly<ArgumentNullException>();
+        }
     }
 }

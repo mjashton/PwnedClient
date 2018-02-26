@@ -31,8 +31,24 @@ namespace PwnedClient.Tests
         {
             var password = Guid.NewGuid().ToString();
             var hashedPassword = password.ToSha1Hash();
-            var result = this.passwordChecker.IsCompromisedPlainTextPassword(hashedPassword);
+            var result = this.passwordChecker.IsCompromisedHashedPassword(hashedPassword);
             result.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void ShortPassword_ThrowsException()
+        {
+            var password = "1234";
+            Action act = () => this.passwordChecker.IsCompromisedHashedPassword(password);
+            act.Should().ThrowExactly<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void NullPassword_ThrowsException()
+        {
+            string password = null;
+            Action act = () => this.passwordChecker.IsCompromisedHashedPassword(password);
+            act.Should().ThrowExactly<ArgumentNullException>();
         }
     }
 }

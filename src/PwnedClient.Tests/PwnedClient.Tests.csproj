@@ -57,7 +57,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TimingTests.cs" />
+    <Compile Include="GuardClauseTests.cs" />
     <Compile Include="WhenTestingPartialHash.cs" />
     <Compile Include="WhenTestingHashedPasswords.cs" />
     <Compile Include="WhenTestingPlainTextPasswords.cs" />

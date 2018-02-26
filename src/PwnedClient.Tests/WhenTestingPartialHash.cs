@@ -22,7 +22,7 @@
             var hashedPassword = password.ToSha1Hash();
             var firstFive = hashedPassword.Substring(0, 5);
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesForPartialHash(firstFive);
+            var result = this.passwordChecker.GetMatchesDictionary(firstFive);
             result.Should().ContainKey(suffix);
         }
 
@@ -33,7 +33,7 @@
             var hashedPassword = password.ToSha1Hash();
             var firstFive = hashedPassword.Substring(0, 5);
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesForPartialHash(firstFive);
+            var result = this.passwordChecker.GetMatchesDictionary(firstFive);
             result.Should().NotContainKey(suffix);
         }
 
@@ -43,8 +43,24 @@
             var password = "password123";
             var hashedPassword = password.ToSha1Hash();
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesForPartialHash(hashedPassword);
+            var result = this.passwordChecker.GetMatchesDictionary(hashedPassword);
             result.Should().ContainKey(suffix);
+        }
+
+        [TestMethod]
+        public void ShortPassword_ThrowsException()
+        {
+            var password = "1234";
+            Action act = () => this.passwordChecker.GetMatchesDictionary(password);
+            act.Should().ThrowExactly<ArgumentException>();
+        }
+
+        [TestMethod]
+        public void NullPassword_ThrowsException()
+        {
+            string password = null;
+            Action act = () => this.passwordChecker.GetMatchesDictionary(password);
+            act.Should().ThrowExactly<ArgumentNullException>();
         }
     }
 }
