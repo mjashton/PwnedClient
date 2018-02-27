@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PwnedClient", "PwnedClient\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PwnedClient.Tests", "PwnedClient.Tests\PwnedClient.Tests.csproj", "{B983A989-3A06-443F-B751-50A6F17F8F61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PwnedClient.Console", "PwnedClient.Console\PwnedClient.Console.csproj", "{C5C5048B-C9CC-4C93-BE68-28461965BA4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B983A989-3A06-443F-B751-50A6F17F8F61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B983A989-3A06-443F-B751-50A6F17F8F61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B983A989-3A06-443F-B751-50A6F17F8F61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5C5048B-C9CC-4C93-BE68-28461965BA4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5C5048B-C9CC-4C93-BE68-28461965BA4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5C5048B-C9CC-4C93-BE68-28461965BA4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5C5048B-C9CC-4C93-BE68-28461965BA4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

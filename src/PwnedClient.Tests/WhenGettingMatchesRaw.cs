@@ -5,7 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class WhenTestingPartialHash
+    public class WhenGettingMatchesRaw
     {
         private PwnedClient passwordChecker;
 
@@ -22,8 +22,8 @@
             var hashedPassword = password.ToSha1Hash();
             var firstFive = hashedPassword.Substring(0, 5);
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesDictionary(firstFive);
-            result.Should().ContainKey(suffix);
+            var result = this.passwordChecker.GetMatchesRaw(firstFive);
+            result.Should().Contain(suffix);
         }
 
         [TestMethod]
@@ -33,8 +33,8 @@
             var hashedPassword = password.ToSha1Hash();
             var firstFive = hashedPassword.Substring(0, 5);
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesDictionary(firstFive);
-            result.Should().NotContainKey(suffix);
+            var result = this.passwordChecker.GetMatchesRaw(firstFive);
+            result.Should().NotContain(suffix);
         }
 
         [TestMethod]
@@ -43,15 +43,15 @@
             var password = "password123";
             var hashedPassword = password.ToSha1Hash();
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesDictionary(hashedPassword);
-            result.Should().ContainKey(suffix);
+            var result = this.passwordChecker.GetMatchesRaw(hashedPassword);
+            result.Should().Contain(suffix);
         }
 
         [TestMethod]
         public void ShortPassword_ThrowsException()
         {
             var password = "1234";
-            Action act = () => this.passwordChecker.GetMatchesDictionary(password);
+            Action act = () => this.passwordChecker.GetMatchesRaw(password);
             act.Should().ThrowExactly<ArgumentException>();
         }
 
@@ -59,7 +59,7 @@
         public void NullPassword_ThrowsException()
         {
             string password = null;
-            Action act = () => this.passwordChecker.GetMatchesDictionary(password);
+            Action act = () => this.passwordChecker.GetMatchesRaw(password);
             act.Should().ThrowExactly<ArgumentNullException>();
         }
     }

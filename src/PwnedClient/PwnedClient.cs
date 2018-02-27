@@ -1,4 +1,14 @@
-﻿namespace PwnedClient
+﻿/*
+    Provides a simple client to Troy Hunt's Pwned Passwords API
+   See https://haveibeenpwned.com for full details
+   This client does not send a complete password across the wire
+   and uses the k-Anonymity model feature of "Have I Been Pwned?"
+   to determine whether the provided password has been involved
+   in a breach. Read more here ...
+   https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/
+   
+ */
+namespace PwnedClient
 {
     using System;
     using System.Collections.Generic;
@@ -9,12 +19,8 @@
     using System.Text;
 
     /// <summary>
-    /// Provides a simple client to Troy Hunts Pwned Passwords API
-    /// See https://haveibeenpwned.com for full details
-    /// This client does not send a complete password across the wire
-    /// and uses the k-Anonymity model feature of Have I Been Pwned
-    /// to determine whether the provided password has been involved
-    /// in a breach. Read more here https://www.troyhunt.com/ive-just-launched-pwned-passwords-version-2/
+    /// A simple class to communicate with Troy Hunt's
+    /// Pwned Passowrds service, using the k-anonymity model
     /// </summary>
     public class PwnedClient
     {
