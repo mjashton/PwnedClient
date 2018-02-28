@@ -51,6 +51,7 @@ If you want to do your own heavy lifting, in terms of working out whether the pa
 public Dictionary<string,int> GetMatchesDictionary(string hashedPassword)
 ```
 This will return a dictionary of all the *suffixes* of compromised hashed passwords that share the first 5 characters with your submitted hashed password, along with a prevalence count of how many times it appears in the dataset. You can then work out if your hashed password appears in this list, and maybe use the prevalence count to decide whether it is a safe password to use. Personally, any appearance in the breach dataset would be enough to stop me wanting to use that password.
+
 e.g.
 ```c#
 var pwdChecker = new PwnedClient();
