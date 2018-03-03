@@ -16,12 +16,37 @@ public PwnedClient(HttpClient client)
 
 Depending on your requirements, this client provides a number of ways to access the service.
 
-### Provide the complete password
-*Note: the complete password is not sent across the wire to the service, it is just used by this client to return you a boolean of whether it has been compromised in a breach*.
+### Let the client do the work
+*Note: the complete password is not sent across the wire to the service. Even if you use a method that requires a complete password it is just used by this client to inform you on whether it has been compromised in a breach*.
 
-These methods provide the most convenience and the least information: just informing you of whether the provided password has been compromised or not.
-There are two methods you can use, depending on if you want to hash the password yourself or have the convenience of just providing the plain text password.
+These methods provide the most convenience and the least information:  informing you of whether the provided password has been compromised or not.
+
+##### Plain or Hashed password
+Find out whether a password is listed in a breach dataset
+```c#
+public bool IsCompromised(string password, bool isHashed = false)
+```
+e.g.
+```c#
+var pwdChecker = new PwnedClient();
+bool isUnsafe = pwdChecker.IsCompromised("p@55w0rd");
+bool isUnsafe2 = pwdChecker.IsCompromised("p@55w0rd".ToSha1Hash(), true);
+```
+
+##### Find out how compromised a password is
+Get a count indicating how many breach data sets the password appears in.
+```c#
+public int GetBreachCount(string password, bool isHashed = false)
+```
+e.g.
+```c#
+var pwdChecker = new PwnedClient();
+var count = pwdChecker.GetBreachCount("p@55w0rd");
+var count2 = pwdChecker.GetBreachCount("p@55w0rd".ToSha1Hash(), true);
+```
+
 ##### Plain text password
+An explicit method for plain text password checking.
 ```c#
 public bool IsCompromisedPlainTextPassword(string password)
 ```
@@ -31,7 +56,18 @@ var pwdChecker = new PwnedClient();
 bool isUnsafe = pwdChecker.IsCompromisedPlainTextPassword("p@55w0rd");
 ```
 
+An explicit method for getting the breach count of a plain text password
+```c#
+public int GetBreachCountPlainTextPassword(string password)
+```
+e.g.
+```c#
+var pwdChecker = new PwnedClient();
+var count = pwdChecker.GetBreachCountPlainTextPassword("p@55w0rd");
+```
+
 ##### Hashed password
+An explicit method for hashed password checking.
 You can provide the SHA1 hashed password, or make use of the provided extension method.
 
 ```c#
@@ -43,8 +79,18 @@ var pwdChecker = new PwnedClient();
 bool isUnsafe = pwdChecker.IsCompromisedHashedPassword("p@55w0rd".ToSha1Hash());
 ```
 
-### Provide incomplete password hash
-If you want to do your own heavy lifting, in terms of working out whether the password has been breached, you can use one of two methods for returning the compromised password hashes that match the first 5 characters of your hashed password. Both methods require a hashed password, and you can provide either a complete hashed password or just the first 5 characters from the hashed password. *Even if you provide the complete password only the first 5 characters are sent to the service*.
+An explicit method for getting the breach count of a hashedpassword
+```c#
+public int GetBreachCountHashedPassword(string hashedPassword)
+```
+e.g.
+```c#
+var pwdChecker = new PwnedClient();
+var count = pwdChecker.GetBreachCountHashedPassword("p@55w0rd".ToSha1Hash());
+```
+
+### You do the work
+If you want to do your own heavy lifting, in terms of working out whether the password has been breached, you can use the following methods for returning the compromised password hashes that match the first 5 characters of your hashed password. Both methods require a hashed password, and you can provide either a complete hashed password or just the first 5 characters from the hashed password. *Even if you provide the complete password only the first 5 characters are sent to the service*.
 
 ##### Get a dictionary returned
 ```c#

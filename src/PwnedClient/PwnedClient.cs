@@ -47,6 +47,22 @@ namespace PwnedClient
             this.client.DefaultRequestHeaders.Add("api-version", "2");
             this.client.DefaultRequestHeaders.Add("User-Agent", "PwnedClient.Net");
         }
+
+        /// <summary>
+        /// Given a password, determine if it has been compomised
+        /// in any data breaches. Use isHashed to indicate that this
+        /// password is provided SHA1 hashed
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="isHashed"></param>
+        /// <returns></returns>
+        public bool IsCompromised(string password, bool isHashed = false)
+        {
+            return isHashed
+                ? this.IsCompromisedHashedPassword(password)
+                : this.IsCompromisedPlainTextPassword(password);
+        }
+
         /// <summary>
         /// Given a password in plain-text, determines whether it has been
         /// compromised in any data breaches
@@ -74,10 +90,61 @@ namespace PwnedClient
             Guard.ArgumentHasMinLength(hashedPassword, 5, nameof(hashedPassword));
 
             var suffix = hashedPassword.GetSuffix();
-
             var results = this.GetSearchResults(hashedPassword.FirstFive());
             return results.Contains(suffix);
         }
+
+        /// <summary>
+        /// Gets the prevalence count for how often this password
+        /// appears in breach data. Use isHashed to indicate that 
+        /// the given password has been SHA1 hashed
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="isHashed"></param>
+        /// <returns></returns>
+        public int GetBreachCount(string password, bool isHashed = false)
+        {
+            return isHashed
+                ? this.GetBreachCountHashedPassword(password)
+                : this.GetBreachCountPlainTextPassword(password);
+        }
+
+        /// <summary>
+        /// Gets the prevalence count for how often the given
+        /// plain text password appears in breach data.
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public int GetBreachCountPlainTextPassword(string password)
+        {
+            Guard.ArgumentIsNotNull(password, nameof(password));
+            Guard.ArgumentHasMinLength(password, 5, nameof(password));
+
+            var hashedPassword = password.ToSha1Hash();
+            var suffix = hashedPassword.GetSuffix();
+            var results = this.GetMatchesDictionary(hashedPassword);
+            var isCompomised = results.TryGetValue(suffix, out int count);
+            return isCompomised ? count : 0;
+
+        }
+
+        /// <summary>
+        /// Gets the prevalence count for how often the given
+        /// SHA1 hashed password appears in breach data.
+        /// </summary>
+        /// <param name="hashedPassword"></param>
+        /// <returns></returns>
+        public int GetBreachCountHashedPassword(string hashedPassword)
+        {
+            Guard.ArgumentIsNotNull(hashedPassword, nameof(hashedPassword));
+            Guard.ArgumentHasMinLength(hashedPassword, 5, nameof(hashedPassword));
+
+            var suffix = hashedPassword.GetSuffix();
+            var results = this.GetMatchesDictionary(hashedPassword);
+            var isCompomised = results.TryGetValue(suffix, out int count);
+            return isCompomised ? count : 0;
+        }
+
         /// <summary>
         /// Given the first 5 characters of a hashed password, return a dictionary
         /// of matched password hashe suffixes and the number of occurrences in data breaches
@@ -134,10 +201,16 @@ namespace PwnedClient
             var results = response.Content.ReadAsStringAsync().Result;
             return results;
         }
+
     }
 
     public static class StringExtensions
     {
+        /// <summary>
+        /// Hashes the given string using SHA1 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static string ToSha1Hash(this string input)
         {
             using (var sha1 = new SHA1Managed())
@@ -154,6 +227,12 @@ namespace PwnedClient
             }
         }
 
+        /// <summary>
+        /// Returns the input string with the first five
+        /// characters removed
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static string GetSuffix(this string input)
         {
             Guard.ArgumentIsNotNull(input, nameof(input));
@@ -162,6 +241,11 @@ namespace PwnedClient
             return input.Substring(5, input.Length - 5);
         }
 
+        /// <summary>
+        /// Returns the first five characters of the input string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static string FirstFive(this string input)
         {
             Guard.ArgumentIsNotNull(input, nameof(input));
@@ -170,6 +254,12 @@ namespace PwnedClient
             return input.Substring(0, 5);
         }
 
+        /// <summary>
+        /// Splits the input string into an IEnumerable of string
+        /// splitting on line breaks
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static IEnumerable<string> SplitToLines(this string input)
         {
             if (input == null)

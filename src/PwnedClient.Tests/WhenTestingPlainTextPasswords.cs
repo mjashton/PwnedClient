@@ -17,6 +17,14 @@
         }
 
         [TestMethod]
+        public void BreachedPasswordCompromised_ReturnsTrue()
+        {
+            var password = "password123";
+            var result = this.passwordChecker.IsCompromised(password);
+            result.Should().BeTrue();
+        }
+
+        [TestMethod]
         public void BreachedPassword_ReturnsTrue()
         {
             var password = "password123";
@@ -46,6 +54,22 @@
             string password = null;
             Action act = () => this.passwordChecker.IsCompromisedPlainTextPassword(password);
             act.Should().ThrowExactly<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void BreachedPassword_ReturnsPositiveBreachCount()
+        {
+            var password = "password123";
+            var count = this.passwordChecker.GetBreachCount(password);
+            count.Should().BePositive();
+        }
+
+        [TestMethod]
+        public void RandomPassword_ReturnsZeroBreachCount()
+        {
+            var password = Guid.NewGuid().ToString();
+            var count = this.passwordChecker.GetBreachCount(password);
+            count.Should().Be(0);
         }
     }
 }

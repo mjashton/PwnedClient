@@ -18,6 +18,14 @@ namespace PwnedClient.Tests
         }
 
         [TestMethod]
+        public void BreachedPasswordCompromised_ReturnsTrue()
+        {
+            var password = "password123";
+            var result = this.passwordChecker.IsCompromised(password.ToSha1Hash(), isHashed:true);
+            result.Should().BeTrue();
+        }
+
+        [TestMethod]
         public void BreachedPassword_ReturnsTrue()
         {
             var password = "password123";
@@ -49,6 +57,22 @@ namespace PwnedClient.Tests
             string password = null;
             Action act = () => this.passwordChecker.IsCompromisedHashedPassword(password);
             act.Should().ThrowExactly<ArgumentNullException>();
+        }
+
+        [TestMethod]
+        public void BreachedPassword_ReturnsPositiveBreachCount()
+        {
+            var password = "password123";
+            var count = this.passwordChecker.GetBreachCount(password.ToSha1Hash(),isHashed:true);
+            count.Should().BePositive();
+        }
+
+        [TestMethod]
+        public void RandomPassword_ReturnsZeroBreachCount()
+        {
+            var password = Guid.NewGuid().ToString();
+            var count = this.passwordChecker.GetBreachCount(password.ToSha1Hash(),isHashed:true);
+            count.Should().Be(0);
         }
     }
 }

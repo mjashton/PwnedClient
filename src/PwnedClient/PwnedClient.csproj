@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>mjashton</Authors>
+    <Company />
+    <PackageProjectUrl>https://github.com/mjashton/PwnedClient</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mjashton/PwnedClient</RepositoryUrl>
+    <Description>A simple client to use v2 of the Pwned Password service provided by Troy Hunt of https://haveibeenpwned.com. No passwords are sent to the service using v2, instead just the first 5 characters are used to adhere to a k-Anonymity model.</Description>
+    <PackageTags>pwned password checker validator compromised breach hacked</PackageTags>
+    <PackageIconUrl>https://github.com/mjashton/PwnedClient/raw/master/logo.png</PackageIconUrl>
+    <Version>1.0.1</Version>
+    <PackageReleaseNotes>v1.0.1 Added new convenience methods</PackageReleaseNotes>
   </PropertyGroup>
 
 </Project>
