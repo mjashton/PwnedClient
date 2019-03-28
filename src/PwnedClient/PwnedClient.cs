@@ -9,300 +9,136 @@
    
  */
 
-using System.Threading.Tasks;
-
 namespace PwnedClient
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Net.Http;
     using System.Security.Cryptography;
     using System.Text;
+    using System.Threading.Tasks;
+
+    using global::PwnedClient.Interfaces;
 
     /// <summary>
     /// A simple class to communicate with Troy Hunt's
     /// Pwned Passowrds service, using the k-anonymity model
     /// </summary>
-    public class PwnedClient
+    [Obsolete("For easier namespacing and async-only methods use the PasswordChecker class instead")]
+    public class PwnedClient : IPwnedClient, IPwnedClientAsync
     {
-        private readonly HttpClient client;
-        private readonly Uri baseUri = new Uri("https://api.pwnedpasswords.com/range/");
+        private readonly PwnedClientBase Base;
 
         /// <summary>
         /// Create an instance of the PwnedClient using a new HttpClient
         /// </summary>
-        public PwnedClient(): this(new HttpClient())
+        public PwnedClient() : this(new HttpClient())
         {
-
         }
         /// <summary>
         /// Create an instance of the PwnedClient using a provided HttpClient
         /// </summary>
         /// <param name="client"></param>
-        public PwnedClient(HttpClient client)
+        public PwnedClient(HttpClient client)  
         {
-            Guard.ArgumentIsNotNull(client, nameof(client));
-
-            this.client = client;
-            this.client.BaseAddress = this.baseUri;
-            this.client.DefaultRequestHeaders.Add("api-version", "2");
-            this.client.DefaultRequestHeaders.Add("User-Agent", "PwnedClient.Net");
+            this.Base = new PwnedClientBase(client);
         }
 
-        /// <summary>
-        /// Given a password, determine if it has been compromised
-        /// in any data breaches. Use isHashed to indicate that this
-        /// password is provided SHA1 hashed
-        /// </summary>
-        /// <param name="password"></param>
-        /// <param name="isHashed"></param>
-        /// <returns></returns>
-        public bool IsCompromised(string password, bool isHashed = false)
-        {
-            return IsCompromisedAsync(password, isHashed).Result;
-        }
-
-        /// <summary>
-        /// Given a password, determine if it has been compromised
-        /// in any data breaches. Use isHashed to indicate that this
-        /// password is provided SHA1 hashed
-        /// </summary>
-        /// <param name="password"></param>
-        /// <param name="isHashed"></param>
-        /// <returns></returns>
-        public async Task<bool> IsCompromisedAsync(string password, bool isHashed = false)
-        {
-            return isHashed
-                ? await this.IsCompromisedHashedPasswordAsync(password)
-                : await this.IsCompromisedPlainTextPasswordAsync(password);
-        }
-
-        /// <summary>
-        /// Given a password in plain-text, determines whether it has been
-        /// compromised in any data breaches
-        /// </summary>
-        /// <param name="password"></param>
-        /// <returns>true/false</returns>
-        public bool IsCompromisedPlainTextPassword(string password)
-        {
-            return IsCompromisedPlainTextPasswordAsync(password).Result;
-
-        }
-
-        /// <summary>
-        /// Given a password in plain-text, determines whether it has been
-        /// compromised in any data breaches
-        /// </summary>
-        /// <param name="password"></param>
-        /// <returns>true/false</returns>
-        public async Task<bool> IsCompromisedPlainTextPasswordAsync(string password)
-        {
-            Guard.ArgumentIsNotNull(password, nameof(password));
-            Guard.ArgumentHasMinLength(password, 5, nameof(password));
-
-            var hashedPassword = password.ToSha1Hash();
-            return await this.IsCompromisedHashedPasswordAsync(hashedPassword);
-        }
-
-        /// <summary>
-        /// Given a SHA1 hashed password, determines whether it has been
-        /// compromised in any data breaches
-        /// </summary>
-        /// <param name="hashedPassword"></param>
-        /// <returns>true/false</returns>
-        public bool IsCompromisedHashedPassword(string hashedPassword)
-        {
-            return IsCompromisedHashedPasswordAsync(hashedPassword).Result;
-        }
-
-        /// <summary>
-        /// Given a SHA1 hashed password, determines whether it has been
-        /// compromised in any data breaches
-        /// </summary>
-        /// <param name="hashedPassword"></param>
-        /// <returns>true/false</returns>
-        public async Task<bool> IsCompromisedHashedPasswordAsync(string hashedPassword)
-        {
-            Guard.ArgumentIsNotNull(hashedPassword, nameof(hashedPassword));
-            Guard.ArgumentHasMinLength(hashedPassword, 5, nameof(hashedPassword));
-
-            var suffix = hashedPassword.GetSuffix();
-            var results = await this.GetSearchResultsAsync(hashedPassword.FirstFive());
-            return results.Contains(suffix);
-        }
-
-        /// <summary>
-        /// Gets the prevalence count for how often this password
-        /// appears in breach data. Use isHashed to indicate that 
-        /// the given password has been SHA1 hashed
-        /// </summary>
-        /// <param name="password"></param>
-        /// <param name="isHashed"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public int GetBreachCount(string password, bool isHashed = false)
         {
-            return GetBreachCountAsync(password, isHashed).Result;
+            return this.Base.GetBreachCount(password, isHashed);
         }
 
-        /// <summary>
-        /// Gets the prevalence count for how often this password
-        /// appears in breach data. Use isHashed to indicate that 
-        /// the given password has been SHA1 hashed
-        /// </summary>
-        /// <param name="password"></param>
-        /// <param name="isHashed"></param>
-        /// <returns></returns>
-        public async Task<int> GetBreachCountAsync(string password, bool isHashed = false)
-        {
-            return isHashed
-                ? await this.GetBreachCountHashedPasswordAsync(password)
-                : await this.GetBreachCountPlainTextPasswordAsync(password);
-        }
-
-        /// <summary>
-        /// Gets the prevalence count for how often the given
-        /// plain text password appears in breach data.
-        /// </summary>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        public int GetBreachCountPlainTextPassword(string password)
-        {
-            return GetBreachCountPlainTextPasswordAsync(password).Result;
-        }
-
-        /// <summary>
-        /// Gets the prevalence count for how often the given
-        /// plain text password appears in breach data.
-        /// </summary>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        public async Task<int> GetBreachCountPlainTextPasswordAsync(string password)
-        {
-            Guard.ArgumentIsNotNull(password, nameof(password));
-            Guard.ArgumentHasMinLength(password, 5, nameof(password));
-
-            var hashedPassword = password.ToSha1Hash();
-            var suffix = hashedPassword.GetSuffix();
-            var results = await this.GetMatchesDictionaryAsync(hashedPassword);
-            var isCompromised = results.TryGetValue(suffix, out int count);
-            return isCompromised ? count : 0;
-        }
-
-        /// <summary>
-        /// Gets the prevalence count for how often the given
-        /// SHA1 hashed password appears in breach data.
-        /// </summary>
-        /// <param name="hashedPassword"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public int GetBreachCountHashedPassword(string hashedPassword)
         {
-            return GetBreachCountHashedPasswordAsync(hashedPassword).Result;
+            return this.Base.GetBreachCountHashedPassword(hashedPassword);
         }
 
-        /// <summary>
-        /// Gets the prevalence count for how often the given
-        /// SHA1 hashed password appears in breach data.
-        /// </summary>
-        /// <param name="hashedPassword"></param>
-        /// <returns></returns>
-        public async Task<int> GetBreachCountHashedPasswordAsync(string hashedPassword)
+        /// <inheritdoc />
+        public int GetBreachCountPlainTextPassword(string password)
         {
-            Guard.ArgumentIsNotNull(hashedPassword, nameof(hashedPassword));
-            Guard.ArgumentHasMinLength(hashedPassword, 5, nameof(hashedPassword));
-
-            var suffix = hashedPassword.GetSuffix();
-            var results = await this.GetMatchesDictionaryAsync(hashedPassword);
-            var isCompromised = results.TryGetValue(suffix, out int count);
-            return isCompromised ? count : 0;
+            return this.Base.GetBreachCountPlainTextPassword(password);
         }
 
-        /// <summary>
-        /// Given the first 5 characters of a hashed password, return a dictionary
-        /// of matched password hash suffixes and the number of occurrences in data breaches
-        /// </summary>
-        /// <param name="hashedPassword"></param>
-        /// <returns></returns>
-        /// <remarks>
-        /// Using either of the two GetMatches methods to do your own password checking
-        /// without needing to send the full password to this client.
-        /// </remarks>
+        /// <inheritdoc />
         public Dictionary<string, int> GetMatchesDictionary(string hashedPassword)
         {
-            return GetMatchesDictionaryAsync(hashedPassword).Result;
+            return this.Base.GetMatchesDictionary(hashedPassword);
         }
 
-        /// <summary>
-        /// Given the first 5 characters of a hashed password, return a dictionary
-        /// of matched password hash suffixes and the number of occurrences in data breaches
-        /// </summary>
-        /// <param name="hashedPassword"></param>
-        /// <returns></returns>
-        /// <remarks>
-        /// Using either of the two GetMatches methods to do your own password checking
-        /// without needing to send the full password to this client.
-        /// </remarks>
-        public async Task<Dictionary<string, int>> GetMatchesDictionaryAsync(string hashedPassword)
-        {
-            Guard.ArgumentIsNotNull(hashedPassword, nameof(hashedPassword));
-            Guard.ArgumentHasMinLength(hashedPassword, 5, nameof(hashedPassword));
-
-            var results = await this.GetMatchesRawAsync(hashedPassword);
-            return this.ResultsAsDictionary(results);
-        }
-
-        /// <summary>
-        /// Given the first 5 characters of a hashed password, return the raw
-        /// string which contains compromised password hash suffixes and occurrence counts
-        /// </summary>
-        /// <param name="hashedPassword"></param>
-        /// <returns></returns>
-        /// <remarks>
-        /// The quickest to execute of the two GetMatches methods provided.
-        /// You can handle the return string as you see fit.
-        /// </remarks>
+        /// <inheritdoc />
         public string GetMatchesRaw(string hashedPassword)
         {
-            return GetMatchesRawAsync(hashedPassword).Result;
+            return this.Base.GetMatchesRaw(hashedPassword);
         }
 
-        /// <summary>
-        /// Given the first 5 characters of a hashed password, return the raw
-        /// string which contains compromised password hash suffixes and occurrence counts
-        /// </summary>
-        /// <param name="hashedPassword"></param>
-        /// <returns></returns>
-        /// <remarks>
-        /// The quickest to execute of the two GetMatches methods provided.
-        /// You can handle the return string as you see fit.
-        /// </remarks>
-        public async Task<string> GetMatchesRawAsync(string hashedPassword)
+        /// <inheritdoc />
+        public bool IsCompromised(string password, bool isHashed = false)
         {
-            Guard.ArgumentIsNotNull(hashedPassword, nameof(hashedPassword));
-            Guard.ArgumentHasMinLength(hashedPassword, 5, nameof(hashedPassword));
-
-            return await this.GetSearchResultsAsync(hashedPassword.FirstFive());
+            return this.Base.IsCompromised(password, isHashed);
         }
 
-        private Dictionary<string, int> ResultsAsDictionary(string results)
+        /// <inheritdoc />
+        public bool IsCompromisedHashedPassword(string hashedPassword)
         {
-            var lines = results.SplitToLines().ToList();
-            var dictionary = new Dictionary<string, int>();
-            foreach (var line in lines)
-            {
-                var split = line.Split(':');
-                dictionary.Add(split[0], Convert.ToInt32(split[1]));
-            }
-
-            return dictionary;
+            return this.Base.IsCompromisedHashedPassword(hashedPassword);
         }
 
-        private async Task<string> GetSearchResultsAsync(string searchUri)
+        /// <inheritdoc />
+        public bool IsCompromisedPlainTextPassword(string password)
         {
-            var response = await this.client.GetAsync(searchUri);
-            var results = await response.Content.ReadAsStringAsync();
-            return results;
+            return this.Base.IsCompromisedPlainTextPassword(password);
+        }
+
+        /// <inheritdoc />
+        public Task<int> GetBreachCountAsync(string password, bool isHashed = false)
+        {
+            return this.Base.GetBreachCountAsync(password, isHashed);
+        }
+
+        /// <inheritdoc />
+        public Task<int> GetBreachCountHashedPasswordAsync(string hashedPassword)
+        {
+            return this.Base.GetBreachCountHashedPasswordAsync(hashedPassword);
+        }
+
+        /// <inheritdoc />
+        public Task<int> GetBreachCountPlainTextPasswordAsync(string password)
+        {
+            return this.Base.GetBreachCountPlainTextPasswordAsync(password);
+        }
+
+        /// <inheritdoc />
+        public Task<Dictionary<string, int>> GetMatchesDictionaryAsync(string hashedPassword)
+        {
+            return this.Base.GetMatchesDictionaryAsync(hashedPassword);
+        }
+
+        /// <inheritdoc />
+        public Task<string> GetMatchesRawAsync(string hashedPassword)
+        {
+            return this.Base.GetMatchesRawAsync(hashedPassword);
+        }
+
+        /// <inheritdoc />
+        public Task<bool> IsCompromisedAsync(string password, bool isHashed = false)
+        {
+            return this.Base.IsCompromisedAsync(password, isHashed);
+        }
+
+        /// <inheritdoc />
+        public Task<bool> IsCompromisedHashedPasswordAsync(string hashedPassword)
+        {
+            return this.Base.IsCompromisedHashedPasswordAsync(hashedPassword);
+        }
+
+        /// <inheritdoc />
+        public Task<bool> IsCompromisedPlainTextPasswordAsync(string password)
+        {
+            return this.Base.IsCompromisedPlainTextPasswordAsync(password);
         }
     }
 
@@ -340,7 +176,7 @@ namespace PwnedClient
             Guard.ArgumentIsNotNull(input, nameof(input));
             Guard.ArgumentHasMinLength(input, 5, nameof(input));
 
-            return input.Substring(5, input.Length - 5);
+            return input.Substring(5);
         }
 
         /// <summary>

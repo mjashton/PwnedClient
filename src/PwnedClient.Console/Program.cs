@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PwnedClient.Console
+﻿namespace PwnedClient.Console
 {
     using Console = System.Console;
 
@@ -12,7 +6,7 @@ namespace PwnedClient.Console
     {
         static void Main(string[] args)
         {
-            var pwdChecker = new PwnedClient();
+            var pwdChecker = new PasswordChecker();
             do
             {
                 Console.WriteLine("Enter password to test");
@@ -20,7 +14,7 @@ namespace PwnedClient.Console
                 var hashedPassword = password.ToSha1Hash();
                 var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
 
-                var results = pwdChecker.GetMatchesDictionary(hashedPassword);
+                var results = pwdChecker.GetMatchesDictionaryAsync(hashedPassword).Result;
                 var isUnsafe = results.TryGetValue(suffix, out int count);
 
                 Console.WriteLine(

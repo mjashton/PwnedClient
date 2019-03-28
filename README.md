@@ -10,8 +10,8 @@ This client uses version 2 of the interface which means that **the password is n
 There are two constructors available: a default constructor which will spin up its own instance of an `HttpClient`, and another that allows you to pass your own `HttpClient`.
 
 ```c#
-public PwnedClient()
-public PwnedClient(HttpClient client)
+public PasswordChecker()
+public PasswordChecker(HttpClient client)
 ```
 
 Depending on your requirements, this client provides a number of ways to access the service.
@@ -28,7 +28,7 @@ public bool IsCompromised(string password, bool isHashed = false)
 ```
 e.g.
 ```c#
-var pwdChecker = new PwnedClient();
+var pwdChecker = new PasswordChecker();
 bool isUnsafe = pwdChecker.IsCompromised("p@55w0rd");
 bool isUnsafe2 = pwdChecker.IsCompromised("p@55w0rd".ToSha1Hash(), true);
 ```
@@ -40,7 +40,7 @@ public int GetBreachCount(string password, bool isHashed = false)
 ```
 e.g.
 ```c#
-var pwdChecker = new PwnedClient();
+var pwdChecker = new PasswordChecker();
 var count = pwdChecker.GetBreachCount("p@55w0rd");
 var count2 = pwdChecker.GetBreachCount("p@55w0rd".ToSha1Hash(), true);
 ```
@@ -52,7 +52,7 @@ public bool IsCompromisedPlainTextPassword(string password)
 ```
 e.g.
 ```c#
-var pwdChecker = new PwnedClient();
+var pwdChecker = new PasswordChecker();
 bool isUnsafe = pwdChecker.IsCompromisedPlainTextPassword("p@55w0rd");
 ```
 
@@ -62,7 +62,7 @@ public int GetBreachCountPlainTextPassword(string password)
 ```
 e.g.
 ```c#
-var pwdChecker = new PwnedClient();
+var pwdChecker = new PasswordChecker();
 var count = pwdChecker.GetBreachCountPlainTextPassword("p@55w0rd");
 ```
 
@@ -75,7 +75,7 @@ public bool IsCompromisedHashedPassword(string hashedPassword)
 ```
 e.g.
 ```c#
-var pwdChecker = new PwnedClient();
+var pwdChecker = new PasswordChecker();
 bool isUnsafe = pwdChecker.IsCompromisedHashedPassword("p@55w0rd".ToSha1Hash());
 ```
 
@@ -85,7 +85,7 @@ public int GetBreachCountHashedPassword(string hashedPassword)
 ```
 e.g.
 ```c#
-var pwdChecker = new PwnedClient();
+var pwdChecker = new PasswordChecker();
 var count = pwdChecker.GetBreachCountHashedPassword("p@55w0rd".ToSha1Hash());
 ```
 
@@ -100,7 +100,7 @@ This will return a dictionary of all the *suffixes* of compromised hashed passwo
 
 e.g.
 ```c#
-var pwdChecker = new PwnedClient();
+var pwdChecker = new PasswordChecker();
 var password = "password123";
 var hashedPassword = password.ToSha1Hash();
 var firstFive = hashedPassword.Substring(0, 5);
@@ -127,7 +127,7 @@ You can then use this raw data as you see fit.
 
 e.g.
 ```c#
-var pwdChecker = new PwnedClient();
+var pwdChecker = new PasswordChecker();
 var password = "password123";
 var hashedPassword = password.ToSha1Hash();
 var firstFive = hashedPassword.Substring(0, 5);
