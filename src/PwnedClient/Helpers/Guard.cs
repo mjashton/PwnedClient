@@ -2,6 +2,8 @@
 {
     using System;
     using System.Diagnostics;
+    using global::PwnedClient.Interfaces;
+
     /// <summary>
     /// Some simple guard clauses
     /// </summary>
