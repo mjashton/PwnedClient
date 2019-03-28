@@ -1,11 +1,13 @@
-﻿namespace PwnedClient.Tests
+﻿using System.Threading.Tasks;
+
+namespace PwnedClient.Tests
 {
     using FluentAssertions;
     using System;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class WhenGettingMatchesDictionary
+    public class WhenGettingMatchesDictionaryAsync
     {
         private PwnedClient passwordChecker;
 
@@ -16,44 +18,44 @@
         }
 
         [TestMethod]
-        public void BreachedPassword_IsInRange()
+        public async Task BreachedPassword_IsInRange()
         {
             var password = "password123";
             var hashedPassword = password.ToSha1Hash();
             var firstFive = hashedPassword.Substring(0, 5);
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesDictionary(firstFive);
+            var result = await this.passwordChecker.GetMatchesDictionaryAsync(firstFive);
             result.Should().ContainKey(suffix);
         }
 
         [TestMethod]
-        public void RandomPassword_IsNotInRange()
+        public async Task RandomPassword_IsNotInRange()
         {
             var password = Guid.NewGuid().ToString();
             var hashedPassword = password.ToSha1Hash();
             var firstFive = hashedPassword.Substring(0, 5);
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesDictionary(firstFive);
+            var result = await this.passwordChecker.GetMatchesDictionaryAsync(firstFive);
             result.Should().NotContainKey(suffix);
         }
 
         [TestMethod]
-        public void CompleteBreachedPassword_IsInRange()
+        public async Task CompleteBreachedPassword_IsInRange()
         {
             var password = "password123";
             var hashedPassword = password.ToSha1Hash();
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesDictionary(hashedPassword);
+            var result = await this.passwordChecker.GetMatchesDictionaryAsync(hashedPassword);
             result.Should().ContainKey(suffix);
         }
 
         [TestMethod]
-        public void CompleteRandomPassword_IsNotInRange()
+        public async Task CompleteRandomPassword_IsNotInRange()
         {
             var password = Guid.NewGuid().ToString();
             var hashedPassword = password.ToSha1Hash();
             var suffix = hashedPassword.Substring(5, hashedPassword.Length - 5);
-            var result = this.passwordChecker.GetMatchesDictionary(hashedPassword);
+            var result = await this.passwordChecker.GetMatchesDictionaryAsync(hashedPassword);
             result.Should().NotContainKey(suffix);
         }
 
@@ -61,14 +63,14 @@
         public void ShortPassword_ThrowsException()
         {
             var password = "1234";
-            Action act = () => this.passwordChecker.GetMatchesDictionary(password);
+            Func<Task> act = async () => await this.passwordChecker.GetMatchesDictionaryAsync(password);
             act.Should().ThrowExactly<ArgumentException>();
         }
 
         [TestMethod]
         public void NullPassword_ThrowsException()
         {
-            Action act = () => this.passwordChecker.GetMatchesDictionary(null);
+            Func<Task> act = async () => await this.passwordChecker.GetMatchesDictionaryAsync(null);
             act.Should().ThrowExactly<ArgumentNullException>();
         }
     }

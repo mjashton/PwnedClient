@@ -58,9 +58,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GuardClauseTests.cs" />
+    <Compile Include="WhenGettingMatchesDictionaryAsync.cs" />
+    <Compile Include="WhenGettingMatchesRawAsync.cs" />
     <Compile Include="WhenGettingMatchesRaw.cs" />
     <Compile Include="WhenGettingMatchesDictionary.cs" />
+    <Compile Include="WhenTestingHashedPasswordsAsync.cs" />
     <Compile Include="WhenTestingHashedPasswords.cs" />
+    <Compile Include="WhenTestingPlainTextPasswordsAsync.cs" />
     <Compile Include="WhenTestingPlainTextPasswords.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
